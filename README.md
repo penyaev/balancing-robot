@@ -1,5 +1,6 @@
 # balancing-robot
 
+Click for video demo:
 [![Watch the demo](thumb.jpeg)](https://youtu.be/IbB0ozVAjRE)
 
 A 2-wheel self-balancing robot — physical hardware plus a browser-based
