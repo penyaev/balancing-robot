@@ -44,6 +44,8 @@ with focused, non-overlapping wireless responsibilities:
                        └────────────────────────────────┘
 ```
 
+Onshape model available [here](https://cad.onshape.com/documents/6b9fd9304d8a6d27f15f411d/w/72b36573f85ef1e41fca52e4/e/ba4c9141accb33bb5640b345?renderMode=0&uiState=6a0df08f280133a7f9adecf1)
+
 ## Repo layout
 
 - **`webui/`** — TypeScript / Vite browser app. Connects to the bot
