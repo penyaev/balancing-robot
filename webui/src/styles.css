@@ -1,0 +1,229 @@
+:root {
+  --bg: #1a1d22;
+  --panel: #23272e;
+  --panel-2: #2b2f37;
+  --fg: #d8dde6;
+  --muted: #8a93a3;
+  --accent: #4ea1ff;
+  --warn: #ffb454;
+  --err: #ff5c6c;
+  --good: #6ce5a5;
+  --border: #3a3f48;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--fg); }
+
+#app { display: flex; flex-direction: column; height: 100vh; }
+
+header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--border);
+}
+header h1 { margin: 0; font-size: 14px; font-weight: 600; letter-spacing: 0.3px; }
+.header-controls { display: flex; gap: 6px; align-items: center; }
+
+#hud-bar {
+  padding: 4px 14px;
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
+  /* Tabular numerals so digits don't reflow as values change. */
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 22px;
+}
+#hud-bar #hud { color: var(--fg); }
+
+/* Connection panel — host input + connect button + status pill. */
+.conn-panel {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-left: 0; padding: 0 8px;
+  border-left: 1px solid var(--border);
+}
+.conn-panel #dev-host {
+  background: var(--bg); color: var(--fg);
+  border: 1px solid var(--border); border-radius: 2px;
+  padding: 2px 4px; font-family: inherit; font-size: 11px;
+  width: 140px;
+}
+.conn-status {
+  font-size: 10px; padding: 2px 6px; border-radius: 2px;
+  border: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+  min-width: 80px; text-align: center;
+}
+.conn-disconnected { color: var(--muted); }
+.conn-connecting   { color: var(--warn);   border-color: var(--warn); }
+.conn-connected    { color: var(--good);   border-color: var(--good); }
+.conn-closed       { color: var(--muted); border-color: var(--border); }
+.conn-error        { color: var(--err);    border-color: var(--err); }
+
+
+button {
+  background: var(--panel-2); color: var(--fg);
+  border: 1px solid var(--border); padding: 4px 10px;
+  font-family: inherit; font-size: 12px; cursor: pointer;
+  border-radius: 3px;
+}
+button:hover { border-color: var(--accent); color: var(--accent); }
+button:active { background: var(--bg); }
+
+main {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  flex: 1; min-height: 0;
+}
+
+.left {
+  display: flex; flex-direction: column;
+  padding: 8px; gap: 8px; overflow: auto;
+}
+
+.charts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.chart {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 4px;
+  height: 160px;
+  position: relative;
+}
+.chart canvas { width: 100% !important; height: 100% !important; }
+
+/* Camera pane. The browser handles the multipart/x-mixed-replace
+ * stream natively in the <img> element — we only style the container
+ * + status badge. Height is fixed so the charts below don't reflow
+ * when the pane connects / freezes. */
+.video-pane {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 4px;
+  display: flex; flex-direction: column;
+  gap: 4px;
+}
+.video-pane .video-head {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 11px; color: #8a93a3;
+}
+.video-pane .video-title { font-weight: bold; color: #d8dde6; }
+.video-pane .video-status { font-family: ui-monospace, Menlo, monospace; }
+.video-pane #cam-stream {
+  width: 100%; height: 360px; object-fit: contain;
+  background: #000; border-radius: 2px;
+  display: block;
+}
+
+/* Audio pane. Single row: unmute button + level meter + status text.
+ * No big canvas — audio is consumed via Web Audio, not painted. */
+.audio-pane {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 4px 6px;
+}
+.audio-pane .audio-head {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: #8a93a3;
+}
+.audio-pane .audio-status {
+  font-family: ui-monospace, Menlo, monospace;
+  margin-left: auto;
+}
+.audio-pane #audio-level {
+  background: #11151c; border: 1px solid var(--border); border-radius: 2px;
+}
+
+/* Dot-matrix display pane. Two rows: page picker + text/cycle inputs. */
+.display-pane {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 4px 6px;
+  display: flex; flex-direction: column;
+  gap: 4px;
+  font-size: 11px; color: #8a93a3;
+}
+.display-pane .display-head {
+  display: flex; align-items: center; gap: 8px;
+}
+.display-pane .display-title { font-weight: bold; color: #d8dde6; }
+.display-pane .display-pages { display: flex; gap: 4px; margin-left: auto; }
+.display-pane .display-telemetry {
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.display-pane .display-pages button.active {
+  background: #2d4a78; color: #fff;
+}
+.display-pane .display-row {
+  display: flex; align-items: center; gap: 6px;
+}
+.display-pane #display-text {
+  flex: 1; min-width: 0;
+  background: #11151c; color: #d8dde6;
+  border: 1px solid var(--border); border-radius: 2px;
+  padding: 2px 4px; font-family: inherit; font-size: 11px;
+}
+.display-pane .display-cycle {
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.display-pane #display-cycle-ms {
+  width: 60px;
+  background: #11151c; color: #d8dde6;
+  border: 1px solid var(--border); border-radius: 2px;
+  padding: 2px 4px; font-family: inherit; font-size: 11px;
+}
+
+#controls {
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  overflow: auto;
+  padding: 8px;
+  font-size: 12px;
+}
+
+.group {
+  margin-bottom: 10px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--panel-2);
+}
+.group > h3 {
+  margin: 0; padding: 6px 8px;
+  background: var(--bg);
+  font-size: 12px; font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; user-select: none;
+}
+.group > h3::before { content: "▾ "; color: var(--muted); }
+.group.collapsed > h3::before { content: "▸ "; }
+.group.collapsed > .group-body { display: none; }
+.group-body { padding: 6px 8px; }
+
+.row {
+  display: grid;
+  grid-template-columns: 110px 1fr 60px;
+  gap: 6px; align-items: center;
+  margin-bottom: 4px;
+}
+.row label { color: var(--muted); font-size: 11px; }
+.row input[type="range"] { width: 100%; }
+.row input[type="number"], .row select {
+  background: var(--bg); color: var(--fg);
+  border: 1px solid var(--border); border-radius: 2px;
+  padding: 2px 4px; font-family: inherit; font-size: 11px;
+  width: 100%;
+}
+.row .val { color: var(--fg); text-align: right; font-size: 11px; }
+
+.row.checkbox { grid-template-columns: 110px 1fr; }
+
+.uplot { background: transparent; }
+.u-title { color: var(--fg); font-size: 11px; }
+.u-legend { color: var(--muted); font-size: 10px; }

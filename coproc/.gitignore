@@ -1,0 +1,13 @@
+# PlatformIO / IDF build output
+.pio/
+build/
+sdkconfig
+sdkconfig.old
+managed_components/
+dependencies.lock
+
+# Vendored components — populated by bootstrap.sh from the Bluepad32
+# template. Keeping them out of git keeps our repo lean; the bootstrap
+# script clones a known SHA so reproducibility is fine.
+components/
+patches/

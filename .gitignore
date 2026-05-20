@@ -1,0 +1,21 @@
+node_modules
+dist
+.vite
+.DS_Store
+*.log
+
+# Debug dumps from the web UI's Copy debug button (see webui/vite.config.ts).
+# Directory is kept (via .gitkeep) but its contents are transient.
+debug-dumps/*
+!debug-dumps/.gitkeep
+
+# PlatformIO
+.pio
+.pioenvs
+.piolibdeps
+.vscode
+webui/.idea/
+
+# Local secrets — WiFi credentials etc. (see coproc/wifi_secrets.ini.example).
+# The .example template is committed; the real *_secrets.ini files are not.
+*_secrets.ini

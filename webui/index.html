@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Balancing Robot Web UI</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <h1>2-Wheel Self-Balancing Robot</h1>
+        <div class="header-controls">
+          <button id="btn-playpause">Pause</button>
+          <button id="btn-reset">Reset</button>
+          <button id="btn-debug">Copy debug</button>
+          <span class="conn-panel">
+            <input id="dev-host" type="text" placeholder="balancebot.local" />
+            <button id="btn-connect">Connect</button>
+            <span id="conn-status" class="conn-status conn-disconnected">disconnected</span>
+          </span>
+        </div>
+      </header>
+      <div id="hud-bar"><span id="hud"></span></div>
+      <main>
+        <section class="left">
+          <!-- Camera pane. The <img> src is set/cleared by main.ts when
+               the device host is configured. The browser's native
+               multipart/x-mixed-replace handling does the decode. -->
+          <div class="video-pane">
+            <div class="video-head">
+              <span class="video-title">Camera</span>
+              <button id="btn-video">Disable</button>
+              <span id="cam-status" class="video-status">idle</span>
+            </div>
+            <img id="cam-stream" alt="camera stream" />
+          </div>
+          <!-- Audio pane. Audio playback requires a user gesture
+               (browser autoplay block); the unmute button doubles as
+               the start trigger. The canvas next to the button renders
+               a small live level meter. -->
+          <div class="audio-pane">
+            <div class="audio-head">
+              <button id="btn-mic">Disable</button>
+              <button id="btn-audio">Unmute</button>
+              <canvas id="audio-level" width="120" height="14"></canvas>
+              <span id="audio-status" class="audio-status">idle</span>
+            </div>
+          </div>
+          <!-- Dot-matrix pane. Page picker + scrolling-text input + auto-
+               cycle interval. Coproc owns the rendering; we just push
+               setDisplayPage / setDisplayText / setDisplayEnabled WS
+               commands. Square on the PS5 controller cycles pages
+               independently of this UI. -->
+          <div class="display-pane">
+            <div class="display-head">
+              <span class="display-title">Display</span>
+              <button id="btn-display-enabled">Disable</button>
+              <span class="display-pages">
+                <button id="btn-page-text">Text</button>
+                <button id="btn-page-battery">Battery</button>
+                <button id="btn-page-eyes">Eyes</button>
+                <button id="btn-page-next">Next ▶</button>
+              </span>
+              <span class="display-telemetry">
+                Telemetry
+                <button id="btn-telemetry">Disable</button>
+              </span>
+            </div>
+            <div class="display-row">
+              <input id="display-text" type="text" maxlength="127" placeholder="banner text…" />
+              <button id="btn-display-text">Set text</button>
+              <label class="display-cycle">
+                cycle
+                <input id="display-cycle-ms" type="number" min="0" step="500" value="0" />
+                ms
+              </label>
+              <button id="btn-display-cycle">Apply</button>
+            </div>
+          </div>
+          <div class="charts">
+            <div class="chart"><canvas id="chart-angle"></canvas></div>
+            <div class="chart"><canvas id="chart-rates"></canvas></div>
+            <div class="chart"><canvas id="chart-pos"></canvas></div>
+            <div class="chart"><canvas id="chart-inner-dev"></canvas></div>
+            <div class="chart"><canvas id="chart-wheel-dev"></canvas></div>
+            <div class="chart"><canvas id="chart-ledc-dev"></canvas></div>
+            <div class="chart"><canvas id="chart-summary-dev"></canvas></div>
+            <div class="chart"><canvas id="chart-power-dev"></canvas></div>
+            <div class="chart"><canvas id="chart-pid-outer"></canvas></div>
+          </div>
+        </section>
+        <aside id="controls"></aside>
+      </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
