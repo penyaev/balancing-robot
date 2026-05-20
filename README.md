@@ -1,5 +1,7 @@
 # balancing-robot
 
+[![Watch the demo](thumb.jpeg)](https://youtu.be/IbB0ozVAjRE)
+
 A 2-wheel self-balancing robot — physical hardware plus a browser-based
 web UI that live-tunes parameters, charts telemetry, and streams the
 on-board camera/mic over WebSocket. The bot is split across two ESP32s
