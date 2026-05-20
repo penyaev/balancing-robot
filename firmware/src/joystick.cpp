@@ -49,6 +49,17 @@ bool s_started = false;
 uint8_t s_lightbarR = 0, s_lightbarG = 0, s_lightbarB = 0;
 bool    s_lightbarHaveLast = false;
 
+// True once onEvent has observed a real enhanced-report (0x31) packet,
+// i.e. the controller is fully out of short-report 0x01 mode. Until
+// then the lib is still mid-kick — see onEvent — and the only output
+// report allowed on the wire is that kick. The lightbar poll task
+// gates its ps5.send() on this so a lightbar frame can't interleave
+// with the kick handshake and corrupt it (which leaves the
+// controller stuck blue in 0x01, sticks/buttons dead). Written from
+// the Bluedroid callback task, read from the poll task; plain bool is
+// fine for a single-flag publish on a 32-bit MCU.
+volatile bool s_reportModeOk = false;
+
 // Apply the translated-deadband + power-law expo curve to a normalized
 // stick value in [-1, +1]. Returns a curved value in [-1, +1]. Same
 // function we had in the UART receiver — moved here. db/expo clamped
@@ -70,8 +81,12 @@ void onConnect() {
   shared::setFlag(shared::FLAG_PS_CONNECTED, true);
   // The controller resets its lightbar to default blue on every
   // pair-up; flagging "no last colour known" forces the poll task to
-  // push our state-driven colour on the next tick.
+  // push our state-driven colour once it's allowed to.
   s_lightbarHaveLast = false;
+  // Fresh connection — the controller is back in short-report 0x01
+  // mode and the lib is about to re-kick it. Block lightbar sends
+  // until onEvent confirms 0x31.
+  s_reportModeOk = false;
   Serial.println(F("joystick: PS5 connected"));
 }
 
@@ -84,6 +99,9 @@ void onDisconnect() {
   shared::g.targetV.store(0.0f, std::memory_order_relaxed);
   shared::g.targetTurn.store(0.0f, std::memory_order_relaxed);
   shared::setFlag(shared::FLAG_PS_CONNECTED, false);
+  // Next pair-up will start in 0x01 again; block the lightbar poll
+  // until the next onEvent confirms 0x31.
+  s_reportModeOk = false;
   Serial.println(F("joystick: PS5 disconnected (targetV/Turn zeroed)"));
 }
 
@@ -123,6 +141,12 @@ void onEvent() {
     // Skip stick/button processing — bytes are at wrong offsets in 0x01.
     return;
   }
+
+  // We're now in 0x31. Unblock the lightbar poll task — its
+  // ps5.send() shares ps5BuildAndSend() with the kick path above,
+  // and pushing a colour mid-kick used to corrupt the handshake
+  // (stuck-blue, sticks/buttons read garbage). Safe from here on.
+  s_reportModeOk = true;
 
   // Stick values: esp-ps5 fills ps5.lx/ly/rx/ry as int8 in [-128, +127].
   constexpr float SCALE = 127.0f;
@@ -234,7 +258,10 @@ void isConnectedPollTask(void*) {
     // report when the state transitions. 50 ms cadence is well above
     // the library's per-send rate-limit advisory and gives sub-frame
     // latency on a state change.
-    if (ps5.isConnected()) {
+    // Lightbar send is gated on s_reportModeOk to avoid racing the
+    // 0x31 kick handshake in onEvent — see the s_reportModeOk
+    // comment.
+    if (ps5.isConnected() && s_reportModeOk) {
       uint8_t r, g, b;
       pickLightbarColor(r, g, b);
       if (!s_lightbarHaveLast ||
